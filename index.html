@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cold War</title>
+  <link rel="icon" type="image/png" href="image/favicon.png">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="screen">
+
+    <div id="rulesPopup" class="rules-popup hidden">
+      <h3>Rules</h3>
+      <p><strong>Victory:</strong> The game lasts 30 rounds. The higher final score wins.</p>
+      <p><strong>Scoring:</strong> Each controlled region is worth 2 points. Each dominated region gives +1 extra. If you control more regions than your opponent, gain +2.</p>
+      <p><strong>Control:</strong> A region is controlled if your influence is at least 6 and you lead by 4 or more.</p>
+      <p><strong>Dominance:</strong> A region is dominated if your influence is at least 9 and you lead by 7 or more.</p>
+      <p><strong>Round flow:</strong> Draw 1 card, then play 1 card. Turn order switches starting from Round 16.</p>
+      <p><strong>Special:</strong> UN Veto is a restrictive card. It only triggers when the opponent plays an event card.</p>
+      <button id="closeRulesBtn" class="btn btn-secondary">Close</button>
+    </div>
+
+
+    <div id="toast" class="toast hidden"></div>
+
+
+    <div id="playModal" class="play-modal hidden">
+      <div class="play-dialog">
+        <h3 id="playTitle">Play Card</h3>
+        <div id="playMeta" class="meta"></div>
+        <div id="playDesc" class="desc"></div>
+
+        <div class="play-grid">
+          <div>
+            <label for="target1">Target Region 1</label>
+            <select id="target1"></select>
+          </div>
+
+          <div id="target2Wrap">
+            <label for="target2">Target Region 2</label>
+            <select id="target2"></select>
+          </div>
+
+          <div id="target3Wrap">
+            <label for="target3">Target Region 3</label>
+            <select id="target3"></select>
+          </div>
+
+          <div id="modeWrap">
+            <label for="modeSelect">Mode</label>
+            <select id="modeSelect">
+              <option value="selfPlus">Buff Self</option>
+              <option value="oppMinus">Reduce Opponent</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="play-actions">
+          <button id="cancelPlayBtn" class="btn btn-secondary">Cancel</button>
+          <button id="confirmPlayBtn" class="btn btn-primary">Confirm</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="vetoModal" class="play-modal hidden">
+      <div class="play-dialog">
+        <h3>Use UN Veto?</h3>
+        <div id="vetoMeta" class="meta"></div>
+        <div id="vetoDesc" class="desc"></div>
+        <div class="play-actions">
+          <button id="declineVetoBtn" class="btn btn-secondary">No</button>
+          <button id="useVetoBtn" class="btn btn-primary">Use Veto</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="resultOverlay" class="overlay hidden">
+      <div class="modal result-modal">
+        <div class="modal-kicker">Match Result</div>
+        <div id="resultTitle" class="modal-title">Victory</div>
+        <div id="resultSub" class="modal-sub">The match has ended.</div>
+
+        <div class="result-grid">
+          <div class="result-box">
+            <div class="result-name">You</div>
+            <div id="resultPlayerFaction" class="result-score-title">United States</div>
+            <div id="resultPlayerScore" class="result-score">0</div>
+          </div>
+          <div class="result-box">
+            <div class="result-name">Opponent</div>
+            <div id="resultEnemyFaction" class="result-score-title">Soviet Union</div>
+            <div id="resultEnemyScore" class="result-score">0</div>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <div></div>
+          <button id="restartBtn" class="btn btn-primary">New Game</button>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="board" class="board">
+      <div class="main-row">
+
+        <div class="left-tools">
+          <button id="rulesBtn" class="icon-btn">?</button>
+        </div>
+
+
+        <div class="center-col">
+          <div class="status-row">
+            <div id="roundPill" class="pill">Round 1 / 30</div>
+            <div id="turnPill" class="pill">Your Turn: Draw 1 / Play 1</div>
+            <div id="orderPill" class="pill">Turn order switches at Round 16</div>
+          </div>
+
+          <div id="regions" class="regions"></div>
+        </div>
+
+
+        <div class="enemy-panel">
+          <div class="enemy-title">Opponent Data</div>
+          <div id="enemyFaction" class="enemy-name">Soviet Union</div>
+          <div class="enemy-sub">Controlled by BOT</div>
+
+          <div class="enemy-stats">
+            <div class="enemy-box">
+              <div class="k">Score</div>
+              <div id="enemyScore" class="v">0</div>
+            </div>
+            <div class="enemy-box">
+              <div class="k">Hand</div>
+              <div id="enemyHandCount" class="v">0</div>
+            </div>
+            <div class="enemy-box">
+              <div class="k">Controlled</div>
+              <div id="enemyControlCount" class="v">0</div>
+            </div>
+            <div class="enemy-box">
+              <div class="k">Dominated</div>
+              <div id="enemyDominanceCount" class="v">0</div>
+            </div>
+          </div>
+
+          <div id="enemyLog" class="enemy-log">
+            <div class="log-item">
+              <div class="log-round">Round 1</div>
+              <div class="log-main">Waiting to begin.</div>
+            </div>
+            <div class="log-item"></div>
+            <div class="log-item"></div>
+          </div>
+        </div>
+      </div>
+
+
+      <div class="bottom">
+        <div class="player-info">
+          <div id="playerFaction" class="player-name">United States</div>
+          <div id="playerLine" class="player-line">Score 0 · Controlled 0 · Dominated 0</div>
+
+          <div class="player-grid">
+            <div class="player-stat">
+              <div class="k">Score</div>
+              <div id="playerScore" class="v">0</div>
+            </div>
+            <div class="player-stat">
+              <div class="k">Hand</div>
+              <div id="playerHandCount" class="v">0</div>
+            </div>
+            <div class="player-stat">
+              <div class="k">Controlled</div>
+              <div id="playerControlCount" class="v">0</div>
+            </div>
+            <div class="player-stat">
+              <div class="k">Dominated</div>
+              <div id="playerDominanceCount" class="v">0</div>
+            </div>
+          </div>
+
+          <div class="btn-row">
+            <button id="drawBtn" class="btn btn-primary">Draw 1</button>
+            <button id="noLegalBtn" class="btn btn-danger">No Legal Play</button>
+          </div>
+        </div>
+
+        <div class="hand-panel">
+          <div class="hand-head">
+            <div class="hand-title">Hand</div>
+            <div id="handPage" class="hand-page">1 / 1</div>
+          </div>
+
+          <div class="hand-row">
+            <button id="prevHandBtn" class="nav-btn">‹</button>
+            <div id="hand0" class="player-card"></div>
+            <div id="hand1" class="player-card"></div>
+            <div id="hand2" class="player-card"></div>
+            <div id="hand3" class="player-card"></div>
+            <div id="hand4" class="player-card"></div>
+            <button id="nextHandBtn" class="nav-btn">›</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="introOverlay" class="overlay">
+      <div class="modal">
+        <div id="step1" class="modal-step active">
+          <div class="modal-kicker">Start Screen</div>
+          <div class="modal-title">Cold War</div>
+
+          <div class="intro-grid">
+            <div class="info-panel">
+              <div class="info-item">
+                <div class="t">Game Title</div>
+                <div class="d">Cold War</div>
+              </div>
+            </div>
+
+            <div class="info-panel">
+              <div class="info-item">
+                <div class="t">Victory Condition</div>
+                <div class="d">The game lasts 30 rounds. Each controlled region is worth 2 points, each dominated region gives +1, and controlling more regions gives +2.</div>
+              </div>
+            </div>
+
+            <div class="info-panel">
+              <div class="info-item">
+                <div class="t">Rules Overview</div>
+                <div class="d">Each turn: draw 1 card and play 1 card. Turn order switches from Round 16 onward.</div>
+              </div>
+            </div>
+
+            <div class="select-panel">
+              <div class="info-item">
+                <div class="t">Faction</div>
+                <div class="d">Choose either the United States or the Soviet Union. The other side is controlled by the BOT.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="modal-actions">
+            <div></div>
+            <button id="toVictoryBtn" class="btn btn-primary">Next</button>
+          </div>
+        </div>
+
+        <div id="step2" class="modal-step">
+          <div class="modal-kicker">Victory</div>
+          <div class="modal-title">How to Win</div>
+          <div class="modal-sub">After 30 rounds, the side with the higher score wins. If scores are tied, compare dominated regions, then total influence, then Europe influence. The tie-break winner gains +1 final point.</div>
+
+          <div class="modal-actions">
+            <button id="backToIntroBtn" class="btn btn-secondary">Back</button>
+            <button id="toFactionBtn" class="btn btn-primary">Next</button>
+          </div>
+        </div>
+
+        <div id="step3" class="modal-step">
+          <div class="modal-kicker">Choose Faction</div>
+          <div class="modal-title">Select Your Side</div>
+          <div class="modal-sub">Choose the faction you want to play. The other side will be controlled by the BOT.</div>
+
+          <div class="factions">
+            <button id="pickUSBtn" class="faction us selected">
+              <div class="faction-name">United States</div>
+              <div class="faction-desc">Steady expansion and stronger links with Europe.</div>
+            </button>
+
+            <button id="pickUSSRBtn" class="faction ussr">
+              <div class="faction-name">Soviet Union</div>
+              <div class="faction-desc">Better suppression and comeback potential in contested regions.</div>
+            </button>
+          </div>
+
+          <div class="modal-actions">
+            <button id="backToVictoryBtn" class="btn btn-secondary">Back</button>
+            <button id="startGameBtn" class="btn btn-primary">Start Game</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="cards.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>
